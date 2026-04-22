@@ -7,3 +7,9 @@
 16,aan
 17,mulkan
 18,mulkan
+19,nopal
+20,nopal
+21,nop
+22,nop
+23,nop
+24,nop
