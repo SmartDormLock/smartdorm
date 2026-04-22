@@ -4,6 +4,14 @@ import time
 import logging
 from rc522_spi_library import RC522SPILibrary, StatusCodes
 
+import RPi.GPIO as GPIO
+
+RELAY_PIN = 27  # sesuaikan kalau beda
+
+# ================= RELAY SETUP =================
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(RELAY_PIN, GPIO.OUT, initial=GPIO.LOW)  # default LOCK
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 DATA_FILE = "rfid_cards.txt"
@@ -83,6 +91,23 @@ def read_card(reader):
         time.sleep(0.1)
 
 
+# ================= RELAY + SOLENOID =================
+def buka_pintu():
+    print("Membuka pintu...")
+    GPIO.output(RELAY_PIN, GPIO.HIGH)  # HIGH = buka
+    time.sleep(5)
+
+
+def kunci_pintu():
+    print("Mengunci pintu...")
+    GPIO.output(RELAY_PIN, GPIO.LOW)   # LOW = kunci
+
+
+def open_door():
+    buka_pintu()
+    kunci_pintu()
+    print("Pintu terkunci kembali")
+
 # ================= ENROLL =================
 def enroll_card(reader, cards):
 
@@ -146,6 +171,7 @@ def verify_card(reader, cards):
             print(f"Nama : {data['name']}")
             print(f"ID   : {id}")
             print("==============================")
+            open_door()
             return
 
     print("\n❌ AKSES DITOLAK")
@@ -244,6 +270,11 @@ def main():
         if reader:
             reader.cleanup()
             print("RC522 cleanup selesai")
+        
+        GPIO.output(RELAY_PIN, GPIO.LOW)  # paksa LOCK dulu
+        time.sleep(0.5)
+        
+        GPIO.cleanup()
 
 
 if __name__ == "__main__":
